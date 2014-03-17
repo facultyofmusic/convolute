@@ -20,8 +20,10 @@ The editor I used is the ACE editor. You can find them here: http://ace.c9.io/
 
 The graphing utilies I used is by Dygraph: http://dygraphs.com/
 
-#### LICENCE
-============
+
+
+LICENCE
+-------
 Copyright (C) 2014 by Daniel Gen Li 
 
 Permission is hereby granted to any person obtaining a copy
