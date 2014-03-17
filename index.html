@@ -16,61 +16,64 @@
   <div id="toolbar">
     <div class="button" id="load">Load</div>
     <div class="button" id="save">Save</div>
-        <!-- <div class="button disabled">Undo</div>
-        <div class="button disabled">Redo</div> -->
-        <div class="button" id="about">About</div>
-      </div>
-      <div id="leftsidebar"></div>
+    <div class="button" id="about">About</div>
 
-      <div id="rightsidebar">
-        <div id="function-editor">function foo(items) {
-          var x = "All this is syntax highlighted";
-          return x;
-        }</div>
-      </div>  
+    <!-- Github button -->
+    <div class="button" id="github-link">Fork me on Github!</div>
 
-      <div id="editor">
-        <div class="contents">
+  </div>
+  <div id="leftsidebar"></div>
 
-          <div id="firstContainer">
-            <p><b>Equation: </b><br>
-              <textarea cols="80" rows="10" id="eq">function(x) {
-                return [0.1 * x, 0.1 * x + Math.sin(x), 0.1*x + Math.cos(x)];
-              }</textarea><br>
-              <b>Preset functions:</b> <select id="presets">
-              <option selected="" id="custom">(custom)</option>
-              <option id="id">Identity</option>
-              <option id="sine">Sine Wave</option>
-              <option id="taylor">Taylor series</option>
-              <option id="sawtooth">Sawtooth</option>
-            </select>
-          </p>
+  <div id="rightsidebar">
+    <h3 class="side-bar-title">Function Editor</h3>
 
-          <p><b>x range: </b> <input type="text" width="5" id="x1" value="-10">
-            to <input type="text" width="5" id="x2" value="10"></p>
-            <p><button id="plot">Plot</button></p>
+    <div id="function-editor">/* Click on a function in the left-side-bar to enable editing. */</div>
+  </div>  
 
-            <div id="graph_div" style="width:600px; height:300px;"></div>
-          </div>
+  <div id="editor">
+    <div class="contents">
 
-          <div id="placeholder"></div>
-          <canvas id="canvas2d"></canvas>
-          <div id="nubs"></div>
-        </div>
-      </div>
-      <div id="fade"></div>
-      <div id="dialog"></div>
-      <div id="loading">
-        <script type="text/javascript">document.write('Loading...');</script>
-        <noscript>Please enable JavaScript and refresh this page</noscript>
+      <div id="firstContainer">
+        <p><b>Equation: </b><br>
+          <textarea cols="80" rows="10" id="eq">function(x) {
+            return [0.1 * x, 0.1 * x + Math.sin(x), 0.1*x + Math.cos(x)];
+          }</textarea><br>
+          <b>Preset functions:</b> <select id="presets">
+          <option selected="" id="custom">(custom)</option>
+          <option id="id">Identity</option>
+          <option id="sine">Sine Wave</option>
+          <option id="taylor">Taylor series</option>
+          <option id="sawtooth">Sawtooth</option>
+        </select>
+      </p>
+
+      <p><b>x range: </b> <input type="text" width="5" id="x1" value="-10">
+        to <input type="text" width="5" id="x2" value="10"></p>
+        <p><button id="plot">Plot</button></p>
+
+        <div id="graph_div" style="width:600px; height:300px;"></div>
       </div>
 
-      <script src="ace.js" type="text/javascript" charset="utf-8"></script>
-      <script>
-        var editor = ace.edit("function-editor");
-        editor.setTheme("ace/theme/monokai");
-        editor.getSession().setMode("ace/mode/javascript");
-        editor.style.fontSize='10px';
-      </script>
+      <div id="placeholder"></div>
+      <canvas id="canvas2d"></canvas>
+      <div id="nubs"></div>
+    </div>
+  </div>
+  <div id="fade"></div>
+  <div id="dialog"></div>
+  <div id="loading">
+    <script type="text/javascript">document.write('Loading...');</script>
+    <noscript>Please enable JavaScript and refresh this page</noscript>
+  </div>
 
-    </body></html>
+  <script src="ace.js" type="text/javascript" charset="utf-8"></script>
+  <script>
+  var editor = ace.edit("function-editor");
+  editor.setTheme("ace/theme/monokai");
+  editor.getSession().setMode("ace/mode/javascript");
+  editor.setReadOnly(true);
+  //$("#function-editor").style.fontSize='10px';
+  </script>
+
+</body>
+</html>

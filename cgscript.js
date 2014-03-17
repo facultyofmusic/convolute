@@ -1,5 +1,13 @@
 var selectedItem;
 
+var presets = {
+	'Identity': [ -10, 10, 'function(x) {\n  return x;\n}' ],
+	'Sine': [ -10, 10, 'function(x) {\n  return Math.sin(x);\n}' ],
+	'Square-wave': [-10, 10, 'function(x) {\n  var y = 0;\n  for (var i = 1; i < 20; i+=2) {\n    y += Math.sin(i * x)/i;\n  }\n  var final = 1 - 2*(Math.abs(Math.floor(x / Math.PI)) % 2);\n  return [4/Math.PI * y, final];\n}' ],
+	'Unit-step':[-10, 10, 'function(x) {\n  return (x > 0) ? 1 : 0;\n}' ],
+	'Delta':[-10, 10, 'function(x) {\n  return (x == 0) ? 1 : 0;\n}' ]
+};
+
 function contractItem(item) {
 	$(item).removeClass('active').animate({ paddingTop: 0 });
 	$(item).children('.contents').slideUp();
@@ -19,7 +27,7 @@ function plotToID(container_id, fn, low, high) {
 
 	var graph = document.getElementById(container_id);
 
-	console.log(fn);
+	//console.log(fn);
 
 	eval('graph_function = ' + fn);
 
@@ -46,27 +54,19 @@ function plotToID(container_id, fn, low, high) {
 	g = new Dygraph(graph, data, {
 		strokeWidth: 1.5,
 		//displayAnnotations: false,
-        gridLineColor: 'rgb(196, 196, 196)',
-        drawYGrid: false,
-        drawYAxis: true,
-        axisLabelFontSize: 10,
-        axisLabelColor: "white",
-        drawAxesAtZero: true,
-        yAxisLabelWidth:20
+		gridLineColor: 'rgb(196, 196, 196)',
+		drawYGrid: false,
+		drawYAxis: true,
+		axisLabelFontSize: 10,
+		axisLabelColor: "white",
+		drawAxesAtZero: true,
+		yAxisLabelWidth:20
 	});
 }
 
 $(document).ready(function () {
-	console.log("DOES THIS HAPPEN");
-
 
 	var select = document.getElementById("presets");
-	var presets = {
-		'Identity': [ -10, 10, 'function(x) {\n  return x;\n}' ],
-		'Sine': [ -10, 10, 'function(x) {\n  return Math.sin(x);\n}' ],
-		'Taylor Series': [ -3, 3, 'function(x) {\n  return [Math.cos(x), 1 - x*x/2 + x*x*x*x/24];\n}' ],
-		'Sawtooth': [-10, 10, 'function(x) {\n  var y = 0;\n  for (var i = 1; i < 20; i+=2) {\n    y += Math.sin(i * x)/i;\n  }\n  var final = 1 - 2*(Math.abs(Math.floor(x / Math.PI)) % 2);\n  return [4/Math.PI * y, final];\n}' ]
-	};
 
 	select.onchange = function() {
 		var sel = select.selectedIndex;
@@ -128,19 +128,29 @@ $(document).ready(function () {
 		html += '<div class="small-graph" id="small-graph-' + key + '" style="width:250px; height:100px;"></div>'
 
 		// HTML for accept button
-		html += '<div id=' + key + ' class="button accept">Accept</div><div class="reset">Reset</div></div></div>';
+		html += '<div id=' + key + ' class="button accept">Accept</div>';
+		html += '<div id=' + key + ' class="button edit">Edit function</div>';
 		var item = $(html).appendTo('#leftsidebar')[0];
 
 		plotToID('small-graph-' + key, presets[key][2], -5, 5);
 	}
 
 
+	$('.edit').live('click', function() {
+		var editor = ace.edit("function-editor");
+		editor.setValue(presets[this.id][2]);
+        //editor.gotoLine(lineNumber);
+        editor.setReadOnly(false);
+    });
 
 	$('.accept').live('click', function() {
         //contractItem(selectedItem);
         
         // here we put in the graph we want
         console.log("Putting in graph of " + this.id);
+
+        alert('push to main screen!');
+
 
         //selectedItem = null;
     });
@@ -151,12 +161,12 @@ $(document).ready(function () {
     /**
      * Make custom functions space.
      */
-	$('<h3 class="side-bar-title">' + 'Custom functions:' + '</h3>').appendTo('#leftsidebar');
+     $('<h3 class="side-bar-title">' + 'Custom functions:' + '</h3>').appendTo('#leftsidebar');
 
 
 
-	$('#loading').hide();
-});
+     $('#loading').hide();
+ });
 
 // Change the filter when a leftsidebar item is clicked
 $('#leftsidebar .item .title').live('mousedown', function(e) {
@@ -172,3 +182,7 @@ $('#leftsidebar .item .title').live('mousedown', function(e) {
 		selectedItem = null;
 	}
 });
+
+
+
+

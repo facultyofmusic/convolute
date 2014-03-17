@@ -41,7 +41,7 @@ body {
 .button {
     display: inline-block;
     padding: 1px 15px;
-    border-radius: 4px;
+    border-radius: 0px;
     vertical-align: top;
     background: -moz-linear-gradient(#4B4947, #32302D);
     background: -webkit-gradient(linear, left top, left bottom, from(#4B4947), to(#32302D));
@@ -80,7 +80,7 @@ body {
     padding-top:5px;
     padding-bottom:5px;
     margin-top: 0px;
-    margin-bottom: 1px;
+    margin-bottom: 0px;
 
     border-top: solid black 1px;
 
@@ -132,16 +132,17 @@ body {
     bottom: 0;
     width: 500px;
     padding: 0 0 20px 0;
-    background: #3B3937;
+    background-color: #3B3937;
     overflow-x: hidden;
     overflow-y: auto;
     -moz-box-shadow: 1px 0 0 black;
     -webkit-box-shadow: 1px 0 0 black;
+    border-left: solid black 1px;
 }
 
 #function-editor{
     position: absolute;
-    top: 0;
+    top: 30px;
     right: 0;
     bottom: 0;
     left: 0;
@@ -392,5 +393,16 @@ body {
     font-size: 100px;
     line-height: 100px;
     padding-bottom: 40px;
+}
+
+#github-link{
+    position: absolute;
+    right: 7px;
+    top: 0px;
+
+
+    border-radius: #155987 1px;
+    background: -moz-linear-gradient(#155987, #11107D);
+    background: -webkit-gradient(linear, left top, left bottom, from(#155987), to(#11107D));
 }
 
