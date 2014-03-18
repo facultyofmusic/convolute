@@ -8,63 +8,57 @@
   <script type="text/javascript" src="jquery/jquery.ui.slider.js"></script>
   <script type="text/javascript" src="http://evanw.github.com/glfx.js/glfx.js"></script>
   <script type="text/javascript" src="http://dygraphs.com/1.0.1/dygraph-combined.js"></script>
-  <script type="text/javascript" src="cgscript.js"></script>
   <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
 <body>
+
+  <div id="loading">
+    <script type="text/javascript">document.write('Loading...');</script>
+    <noscript>Please enable JavaScript and refresh this page</noscript>
+  </div>
+
   <div id="toolbar">
+    <div class="button" id="new-function">New Function</div>
     <div class="button" id="load">Load</div>
     <div class="button" id="save">Save</div>
     <div class="button" id="about">About</div>
 
     <!-- Github button -->
+    <div class="button" id="toggle-editor">Toggle Editor</div>
     <div class="button" id="github-link">Fork me on Github!</div>
 
   </div>
   <div id="leftsidebar"></div>
 
   <div id="rightsidebar">
-    <h3 class="side-bar-title">Function Editor</h3>
+    <h3 class="side-bar-title">Function Code Editor</h3>
 
-    <div id="function-editor">/* Click on a function in the left-side-bar to enable editing. */</div>
+    <div id="function-editor">// Chose a function from the left to edit.</div>
   </div>  
 
   <div id="editor">
-    <div class="contents">
 
       <div id="firstContainer">
-        <p><b>Equation: </b><br>
-          <textarea cols="80" rows="10" id="eq">function(x) {
-            return [0.1 * x, 0.1 * x + Math.sin(x), 0.1*x + Math.cos(x)];
-          }</textarea><br>
-          <b>Preset functions:</b> <select id="presets">
-          <option selected="" id="custom">(custom)</option>
-          <option id="id">Identity</option>
-          <option id="sine">Sine Wave</option>
-          <option id="taylor">Taylor series</option>
-          <option id="sawtooth">Sawtooth</option>
-        </select>
-      </p>
+        <div id="graph_div1"></div>
+      </div>
 
-      <p><b>x range: </b> <input type="text" width="5" id="x1" value="-10">
-        to <input type="text" width="5" id="x2" value="10"></p>
-        <p><button id="plot">Plot</button></p>
+      <div id="secondContainer">
+        <div id="graph_div2"></div>
+      </div>
 
-        <div id="graph_div" style="width:600px; height:300px;"></div>
+      <div id="resultContainer">
+        <div id="graph_result"></div>
       </div>
 
       <div id="placeholder"></div>
       <canvas id="canvas2d"></canvas>
       <div id="nubs"></div>
     </div>
-  </div>
+
+
   <div id="fade"></div>
   <div id="dialog"></div>
-  <div id="loading">
-    <script type="text/javascript">document.write('Loading...');</script>
-    <noscript>Please enable JavaScript and refresh this page</noscript>
-  </div>
 
   <script src="ace.js" type="text/javascript" charset="utf-8"></script>
   <script>
@@ -74,6 +68,7 @@
   editor.setReadOnly(true);
   //$("#function-editor").style.fontSize='10px';
   </script>
+  <script type="text/javascript" src="cgscript.js"></script>
 
 </body>
 </html>
