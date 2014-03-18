@@ -33,8 +33,39 @@
 
   <div id="rightsidebar">
     <h3 class="side-bar-title">Function Code Editor</h3>
-
     <div id="function-editor">// Chose a function from the left to edit.</div>
+    <div id='function-properties-container'>
+      <h3 class="side-bar-title">Function Properties</h3>
+  
+      <div class="subpanel">
+          <div class="contents">
+              <table>
+                  <tr>
+                      <td class="table-label">Non-Zero Range:</td>
+                      <td>
+                        <input type="number" name="low" min="-1000" max="1000">
+                      </td>
+                      <td>
+                        to
+                      </td>
+                      <td>
+                        <input type="number" name="high" min="-1000" max="1000">
+                      </td>
+                 </tr>
+                 <tr>
+                      <td class="table-label">Function name:</td>
+                      <td colspan=3 >
+                        <input type="text" name="name" placeholder="enter name here">
+                      </td>
+                 </tr>
+              </table>
+              <div id='save-changes' class="button accept">Save Changes</div>
+              <div id='save-changes-as' class="button accept">Save As New Function </div>
+              <div id='delete-changes' class="button edit">Cancel</div>
+          </div>
+      </div>
+
+    </div>
   </div>  
 
   <div id="editor">

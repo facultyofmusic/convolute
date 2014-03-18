@@ -152,11 +152,13 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
 
 
 
-
+ var leftSideFunction;
+ var rightSideFunction;
+ var resultFunction;
 
  var selectedItem;
 
- var presets = {
+ var functions = {
  	'Identity': {
  		low: -10, 
  		high: 10, 
@@ -171,9 +173,9 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  		low: -10,
  		high: 10,
  		fString: 'function(x) {\n  var y = 0;\n  for (var i = 1; i < 20; i+=2) {'+
- 				'\n    y += Math.sin(i * x)/i;\n  }\n'+
- 				'  var final = 1 - 2*(Math.abs(Math.floor(x / Math.PI)) % 2);\n' +
- 				'  return [4/Math.PI * y, final];\n}'
+ 		'\n    y += Math.sin(i * x)/i;\n  }\n'+
+ 		'  var final = 1 - 2*(Math.abs(Math.floor(x / Math.PI)) % 2);\n' +
+ 		'  return [4/Math.PI * y, final];\n}'
  	},
  	'Unit-step': {
  		low: -10, 
@@ -186,6 +188,7 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  		fString: 'function(x) {\n  return (x == 0) ? 1 : 0;\n}' 
  	}
  };
+
 
  var large_graph_style = {
  	strokeWidth: 1.5,
@@ -230,7 +233,8 @@ function addNewFunctionToList(name, fModel){
 	html += '                <td><div class="segmented"> PLACE HOLDER </div></td>';
 	html += '           </tr>';
 	html += '        </table>';
-	html += '        <div class="small-graph" id="small-graph-' +name + '" style="width:235px; height:100px;"></div>';
+	html += '        <div class="small-graph" id="small-graph-' + name + 
+	'" style="width:235px; height:100px;"></div>';
 	html += '        <div id=' + name + ' class="button accept">Accept</div>';
 	html += '        <div id=' + name + ' class="button edit">Edit function</div>';
 	html += '    </div>';
@@ -252,6 +256,39 @@ function expandItem(item) {
 		evt.initUIEvent('resize', true, false,window,0);
 		window.dispatchEvent(evt);
 	});
+}
+
+function toggleFunctionEditor(){
+	var bar = $("#rightsidebar");
+
+	if(bar.css('width') != '0px'){
+		bar.animate({ width: 0 });
+	}else{
+		bar.animate({ width: 500 });
+	}
+	editor.resize();
+}
+
+function openFunctionPropertiesPanel(){
+	$('#function-properties-container').animate({
+		height: 125
+	}, { duration: 200, queue: false });
+	$("#function-editor").animate({
+		bottom: 125
+	}, { duration: 200, queue: false });
+
+	editor.resize();
+}
+
+function closeFunctionPropertiesPanel(){
+	$('#function-properties-container').animate({
+		height: 0
+	}, { duration: 200, queue: false });
+	$("#function-editor").animate({
+		bottom: 0
+	}, { duration: 200, queue: false });
+
+	editor.resize();
 }
 
 function plotToID(container_id, fn, low, high) {
@@ -353,20 +390,17 @@ $(document).ready(function () {
 		data.push(row);
 	}
 
-	g = new Dygraph(document.getElementById("graph_div1"), data, large_graph_style);
-	g = new Dygraph(document.getElementById("graph_div2"), data, large_graph_style);
-	g = new Dygraph(document.getElementById("graph_result"), data, large_graph_style);
+	leftSideFunction = new Dygraph(document.getElementById("graph_div1"), data, large_graph_style);
+	rightSideFunction = new Dygraph(document.getElementById("graph_div2"), data, large_graph_style);
+	resultFunction = new Dygraph(document.getElementById("graph_result"), data, large_graph_style);
 
 	/**
-	 * 		ADD preset functions to functons list
-	 *
+	 *	ADD preset functions to functons list
 	 */
-	// test adding things to the sidebar
-	$('<h3 class="side-bar-title">' + 'Preset functions:' + '</h3>').appendTo('#leftsidebar');
-	// Generate the HTML for preset functions
-	for(var key in presets){
-		addNewFunctionToList(key, presets[key]);
-	}
+	 $('<h3 class="side-bar-title">' + 'Preset functions:' + '</h3>').appendTo('#leftsidebar');
+	 for(var key in functions){
+	 	addNewFunctionToList(key, functions[key]);
+	 }
 
     /**
      * Make custom functions space.
@@ -380,11 +414,18 @@ $(document).ready(function () {
 
 
      $('.edit').click(function() {
-     	var editor = ace.edit("function-editor");
-     	editor.setValue(presets[this.id][2]);
-        //editor.gotoLine(lineNumber);
-        editor.setReadOnly(false);
-    });
+     	var that = this;
+     	$("#rightsidebar").animate({ width: 500 }, function(){
+     		openFunctionPropertiesPanel();
+
+     		var editor = ace.edit("function-editor");
+     		editor.resize();
+     		editor.setValue(functions[that.id].fString);
+	        // editor.gotoLine(lineNumber);
+	        editor.setReadOnly(false);
+	        //]console.log(functions[that.id]);
+	    });
+     });
 
      $('.accept').click(function() {
         //contractItem(selectedItem);
@@ -399,17 +440,8 @@ $(document).ready(function () {
     });
 
      $('#toggle-editor').click(function() {
-
-     	var bar = $("#rightsidebar");
-
-     	if(bar.css('width') != '0px'){
-     		bar.animate({ width: 0 });
-     	}else{
-     		bar.animate({ width: 500 });
-     	}
-
-        //selectedItem = null;
-    });
+     	toggleFunctionEditor();
+     });
 
 	// Change the filter when a leftsidebar item is clicked
 	$('#leftsidebar .item .title').click(function(e) {
@@ -428,9 +460,11 @@ $(document).ready(function () {
 
 
 
-	$("#rightsidebar").animate({ width: 0 }, function(){
-		$('#loading').hide();
-	});
+	$('#loading').hide();
+	closeFunctionPropertiesPanel();
+
+
+
 });
 
 
