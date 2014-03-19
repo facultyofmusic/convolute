@@ -158,46 +158,76 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
 
  var selectedItem;
 
+ var GLOBAL_DATA_RANGE = {
+ 	low: -100,
+ 	high: 100
+ };
+
  var functions = {
  	'Identity': {
- 		low: -10, 
- 		high: 10, 
+ 		low: GLOBAL_DATA_RANGE.low, 
+ 		high: GLOBAL_DATA_RANGE.high, 
  		fString : 'function(x) {\n  return x;\n}'
  	},
  	'Sine': {
- 		low : -10,
- 		high : 10,
- 		fString : 'function(x) {\n  return Math.sin(x);\n}' 
+ 		low : GLOBAL_DATA_RANGE.low,
+ 		high : GLOBAL_DATA_RANGE.high,
+ 		fString : 'function(x) {\n  return Math.sin(x/2/Math.PI);\n}' 
  	},
  	'Square-wave': {
  		low: -10,
  		high: 10,
- 		fString: 'function(x) {\n  var y = 0;\n  for (var i = 1; i < 20; i+=2) {'+
- 		'\n    y += Math.sin(i * x)/i;\n  }\n'+
- 		'  var final = 1 - 2*(Math.abs(Math.floor(x / Math.PI)) % 2);\n' +
- 		'  return [4/Math.PI * y, final];\n}'
+ 		fString: 'function(x) {\n  return (Math.abs(x) < 5) ? 1 : 0;\n}'
  	},
  	'Unit-step': {
- 		low: -10, 
- 		high: 10, 
+ 		low: -1, 
+ 		high: GLOBAL_DATA_RANGE.high, 
  		fString: 'function(x) {\n  return (x > 0) ? 1 : 0;\n}'
  	},
  	'Delta':{
- 		low: -10, 
- 		high: 10, 
+ 		low: -1, 
+ 		high: 1, 
  		fString: 'function(x) {\n  return (x == 0) ? 1 : 0;\n}' 
  	}
  };
 
 
- var large_graph_style = {
- 	strokeWidth: 1.5,
+ discreteSignalPlotter = function (e) {
+ 	var ctx = e.drawingContext;
+ 	var points = e.points;
+  var y_bottom = e.dygraph.toDomYCoord(0);  // see http://dygraphs.com/jsdoc/symbols/Dygraph.html#toDomYCoord
+
+  // This should really be based on the minimum gap
+  // var bar_width = 2/3 * (points[1].canvasx - points[0].canvasx);
+  var bar_width = 1;
+  ctx.fillStyle = e.color;
+
+  // Do the actual plotting.
+  for (var i = 0; i < points.length; i++) {
+  	var p = points[i];
+    var center_x = p.canvasx;  // center of the bar
+
+    ctx.fillRect(center_x - bar_width / 2, p.canvasy,
+    	bar_width, y_bottom - p.canvasy);
+
+    ctx.strokeRect(center_x - bar_width / 2 - 1, p.canvasy - 1,
+    	3, 3);
+}
+}
+
+
+var large_graph_style = {
+	plotter: discreteSignalPlotter,
+	colors: ['#70DB98', '#FF00FF'],
+ 	//strokeWidth: 1.5,
 	//displayAnnotations: false,
-	gridLineColor: 'rgb(196, 196, 196)',
+	gridLineColor: 'rgb(90, 90, 90)',
 	drawYGrid: true,
 	drawYAxis: true,
+	drawAxisAtZero: true,
 	axisLabelFontSize: 10,
 	axisLabelColor: "white",
+	axisLineColor: "white",
 	drawAxesAtZero: true,
 	animatedZooms: true,
 	yAxisLabelWidth:20,
@@ -214,113 +244,136 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
 		'click' : clickV3,
 		'dblclick' : dblClickV3,
 		'mousewheel' : scrollV3
-	}
+	},
+	connectSeparatedPoints: false,
+	stepPlot: true
 };
 
+function sampleData(fn){
+	var data = [];
 
-function addNewFunctionToList(name, fModel){
-	var html = '';
-	html += '<div class="item">';
-	html += '    <div class="title">' + name + '</div>';
-	html += '    <div class="contents">';
-	html += '        <table>';
-	html += '            <tr>';
-	html += '                <td>Non-Zero Range:</td>';
-	html += '                <td>[' + fModel.low + ', ' + fModel.high + ']</td>';
-	html += '           </tr>';  
-	html += '           <tr>';
-	html += '                <td>' + 'OTHER' + ':</td>';
-	html += '                <td><div class="segmented"> PLACE HOLDER </div></td>';
-	html += '           </tr>';
-	html += '        </table>';
-	html += '        <div class="small-graph" id="small-graph-' + name + 
-	'" style="width:235px; height:100px;"></div>';
-	html += '        <div id=' + name + ' class="button accept">Accept</div>';
-	html += '        <div id=' + name + ' class="button edit">Edit function</div>';
-	html += '    </div>';
-	html += '</div>';
-	var item = $(html).appendTo('#leftsidebar')[0];
+	/*
+	'Identity': {
+ 		low: -10, 
+ 		high: 10, 
+ 		fString : 'function(x) {\n  return x;\n}'
+ 	},
+ 	*/
 
-	plotToID('small-graph-' + name, fModel.fString, -5, 5);
-}
+ 	eval('___TEMP_FUNC = ' + fn.fString);
 
-function contractItem(item) {
-	$(item).removeClass('active').animate({ paddingTop: 0 });
-	$(item).children('.contents').slideUp();
-}
+ 	for(var n = GLOBAL_DATA_RANGE.low; n < fn.low; n++){
+ 		data.push([n, 0]);
+ 	}
 
-function expandItem(item) {
-	$(item).addClass('active').animate({ paddingTop: 10 });
-	$(item).children('.contents').slideDown(function(){
-		var evt = document.createEvent('UIEvents');
-		evt.initUIEvent('resize', true, false,window,0);
-		window.dispatchEvent(evt);
-	});
-}
+ 	for (var n = fn.low; n <= fn.high; n++) {
+ 		var row = [n];
+ 		row.push(___TEMP_FUNC(n));
+ 		data.push(row);
+ 	}
 
-function toggleFunctionEditor(){
-	var bar = $("#rightsidebar");
+ 	for(var n = fn.high+1; n < GLOBAL_DATA_RANGE.high; n++){
+ 		data.push([n, 0]);
+ 	}
 
-	if(bar.css('width') != '0px'){
-		bar.animate({ width: 0 });
-	}else{
-		bar.animate({ width: 500 });
-	}
-	editor.resize();
-}
+ 	return data;
+ }
 
-function openFunctionPropertiesPanel(){
-	$('#function-properties-container').animate({
-		height: 125
-	}, { duration: 200, queue: false });
-	$("#function-editor").animate({
-		bottom: 125
-	}, { duration: 200, queue: false });
+ function addNewFunctionToList(name, fn){
+ 	var html = '';
+ 	html += '<div class="item">';
+ 	html += '    <div class="title">' + name + '</div>';
+ 	html += '    <div class="contents">';
+ 	html += '        <table>';
+ 	html += '            <tr>';
+ 	html += '                <td>Non-Zero Range:</td>';
+ 	html += '                <td>[' + fn.low + ', ' + fn.high + ']</td>';
+ 	html += '           </tr>';  
+ 	html += '           <tr>';
+ 	html += '                <td>' + 'OTHER' + ':</td>';
+ 	html += '                <td><div class="segmented"> PLACE HOLDER </div></td>';
+ 	html += '           </tr>';
+ 	html += '        </table>';
+ 	html += '        <div class="small-graph" id="small-graph-' + name + 
+ 	'" style="width:235px; height:100px;"></div>';
+ 	html += '        <div id=' + name + ' class="button send-to-graph1">Set Red</div>';
+ 	html += '        <div id=' + name + ' class="button send-to-graph2">Set Blue</div>';
+ 	html += '        <div id=' + name + ' class="button edit">Edit</div>';
+ 	html += '    </div>';
+ 	html += '</div>';
+ 	var item = $(html).appendTo('#leftsidebar')[0];
 
-	editor.resize();
-}
+ 	plotToID('small-graph-' + name, fn);
+ }
 
-function closeFunctionPropertiesPanel(){
-	$('#function-properties-container').animate({
-		height: 0
-	}, { duration: 200, queue: false });
-	$("#function-editor").animate({
-		bottom: 0
-	}, { duration: 200, queue: false });
+ function contractItem(item) {
+ 	$(item).removeClass('active').animate({ paddingTop: 0 });
+ 	$(item).children('.contents').slideUp();
+ }
 
-	editor.resize();
-}
+ function expandItem(item) {
+ 	$(item).addClass('active').animate({ paddingTop: 10 });
+ 	$(item).children('.contents').slideDown(function(){
+ 		var evt = document.createEvent('UIEvents');
+ 		evt.initUIEvent('resize', true, false,window,0);
+ 		window.dispatchEvent(evt);
+ 	});
+ }
 
-function plotToID(container_id, fn, low, high) {
+ function showFunctionEditor(){
+ 	$("#rightsidebar").animate({ right:0 });
+ 	editor.resize();
+ }
+
+ function hideFunctionEditor(){
+ 	$("#rightsidebar").animate({ right:-500 });
+ 	editor.resize();
+ }
+
+
+ function toggleFunctionEditor(){
+ 	if($("#rightsidebar").css('right') == '0px'){
+ 		hideFunctionEditor();
+ 	}else{
+ 		showFunctionEditor();
+ 	}
+ }
+
+ function showFunctionPropertiesPanel(){
+ 	$('#function-properties-container').animate({
+ 		bottom: 0
+ 	}, { duration: 200, queue: false });
+ 	$("#function-editor").animate({
+ 		bottom: 125
+ 	}, { duration: 0, queue: false });
+
+ 	editor.resize();
+ }
+
+ function hideFunctionPropertiesPanel(){
+ 	$('#function-properties-container').animate({
+ 		height: -125
+ 	}, { duration: 200, queue: false });
+ 	$("#function-editor").animate({
+ 		bottom: 0
+ 	}, { duration: 200, queue: false });
+
+ 	editor.resize();
+ }
+
+ function plotToID(container_id, fn) {
 	//eval("fn = " + eq);
 
 	var graph = document.getElementById(container_id);
 
-	//console.log(fn);
-
-	eval('graph_function = ' + fn);
-
-	var width = parseInt(graph.style.width);
-	var x1 = low;
-	var x2 = high;
-	var xs = 1.0 * (x2 - x1) / width;
-
-	var data = [];
-	for (var i = 0; i < width; i++) {
-		var x = x1 + i * xs;
-		var y = graph_function(x);
-		var row = [x];
-		if (y.length > 0) {
-			for (var j = 0; j < y.length; j++) {
-				row.push(y[j]);
-			}
-		} else {
-			row.push(y);
-		}
-		data.push(row);
-	}
+	var data = sampleData(fn);
 
 	g = new Dygraph(graph, data, large_graph_style);
+	g.updateOptions({
+		dateWindow: [-15, 15]
+	});
+
+	return g;
 }
 
 $(document).ready(function () {
@@ -345,7 +398,6 @@ $(document).ready(function () {
 	});
 
 
-
 	$('#graph_result').css({
 		'width':($(window).width() - 260) +'px',
 		'height': (splitHeight*2) + 'px'
@@ -355,9 +407,6 @@ $(document).ready(function () {
 	$('#resultContainer').css({
 		'top': (splitHeight+12) + 'px'
 	});
-
-
-
 
 
 	fn = function(x) {
@@ -390,9 +439,9 @@ $(document).ready(function () {
 		data.push(row);
 	}
 
-	leftSideFunction = new Dygraph(document.getElementById("graph_div1"), data, large_graph_style);
-	rightSideFunction = new Dygraph(document.getElementById("graph_div2"), data, large_graph_style);
-	resultFunction = new Dygraph(document.getElementById("graph_result"), data, large_graph_style);
+	leftSideFunction = plotToID('graph_div1', functions['Identity']);
+	rightSideFunction = plotToID('graph_div2', functions['Identity']);
+	resultFunction = plotToID('graph_result', functions['Identity']);
 
 	/**
 	 *	ADD preset functions to functons list
@@ -410,22 +459,26 @@ $(document).ready(function () {
 
 
 
+     $('.send-to-graph1').click(function() {
+     	plotToID('graph_div1', functions[this.id]);
+	});
 
+
+     $('.send-to-graph2').click(function() {
+     	plotToID('graph_div2', functions[this.id]);
+	});
 
 
      $('.edit').click(function() {
-     	var that = this;
-     	$("#rightsidebar").animate({ width: 500 }, function(){
-     		openFunctionPropertiesPanel();
+     	showFunctionPropertiesPanel();
+     	showFunctionEditor();
 
-     		var editor = ace.edit("function-editor");
-     		editor.resize();
-     		editor.setValue(functions[that.id].fString);
-	        // editor.gotoLine(lineNumber);
-	        editor.setReadOnly(false);
-	        //]console.log(functions[that.id]);
-	    });
-     });
+     	var editor = ace.edit("function-editor");
+     	editor.resize();
+     	editor.setValue(functions[this.id].fString);
+	    // editor.gotoLine(lineNumber);
+	    editor.setReadOnly(false);
+	});
 
      $('.accept').click(function() {
         //contractItem(selectedItem);
@@ -461,7 +514,6 @@ $(document).ready(function () {
 
 
 	$('#loading').hide();
-	closeFunctionPropertiesPanel();
 
 
 

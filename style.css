@@ -4,7 +4,7 @@
     -webkit-user-select: none;
 }
 
-a { color: #FC0; cursor: pointer; }
+a { color: #FFF; cursor: pointer; }
 table { border-collapse: collapse; }
 td { padding: 0; vertical-align: top; }
 body {
@@ -12,6 +12,7 @@ body {
     text-shadow: 0 1px 0 black;
     background: #2B2927;
     color: white;
+    overflow: hidden;
 }
 
 .ui-slider-handle {
@@ -127,14 +128,14 @@ body {
 #rightsidebar {
     z-index: 100;
     position: absolute;
-    right: 0;
+    right: -500px;
     top: 44px;
     bottom: 0;
     width: 500px;
     padding: 0 0 20px 0;
     background-color: #3B3937;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: hidden;
     -moz-box-shadow: 1px 0 0 black;
     -webkit-box-shadow: 1px 0 0 black;
     border-left: solid black 1px;
@@ -170,19 +171,20 @@ body {
     background-color: #22201D;
     border: solid black 1px;
     color: white;
+    overflow: hidden;
 }
 
 #function-editor{
     position: absolute;
     top: 30px;
     right: 0;
-    bottom: 125px;
+    bottom: 0px;
     left: 0;
 }
 
 #function-properties-container{
     position: absolute;
-    bottom:0px;
+    bottom:-125px;
     height:125px;
     left: 0px;
     right: 0px;
@@ -197,7 +199,14 @@ body {
     position: relative;
     margin: 0 -10px;
     padding: 0 20px;
-    border-top: solid #303030 1px;
+    border-top: solid #262626 1px;
+}
+
+#leftsidebar .item:hover {
+    position: relative;
+    margin: 0 -10px;
+    padding: 0 20px;
+    background-color: #505050;
 }
 
 #leftsidebar .item .title {
