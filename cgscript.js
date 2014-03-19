@@ -167,27 +167,32 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  	'Identity': {
  		low: GLOBAL_DATA_RANGE.low, 
  		high: GLOBAL_DATA_RANGE.high, 
- 		fString : 'function(x) {\n  return x;\n}'
+ 		fString : 'function(x) {\n  return x;\n}',
+ 		sample: null
  	},
  	'Sine': {
  		low : GLOBAL_DATA_RANGE.low,
  		high : GLOBAL_DATA_RANGE.high,
- 		fString : 'function(x) {\n  return Math.sin(x/2/Math.PI);\n}' 
+ 		fString : 'function(x) {\n  return Math.sin(x/2/Math.PI);\n}',
+ 		sample: null
  	},
  	'Square-wave': {
  		low: -10,
  		high: 10,
- 		fString: 'function(x) {\n  return (Math.abs(x) < 5) ? 1 : 0;\n}'
+ 		fString: 'function(x) {\n  return (Math.abs(x) < 5) ? 1 : 0;\n}',
+ 		sample: null
  	},
  	'Unit-step': {
  		low: -1, 
  		high: GLOBAL_DATA_RANGE.high, 
- 		fString: 'function(x) {\n  return (x > 0) ? 1 : 0;\n}'
+ 		fString: 'function(x) {\n  return (x > 0) ? 1 : 0;\n}',
+ 		sample: null
  	},
  	'Delta':{
  		low: -1, 
  		high: 1, 
- 		fString: 'function(x) {\n  return (x == 0) ? 1 : 0;\n}' 
+ 		fString: 'function(x) {\n  return (x == 0) ? 1 : 0;\n}' ,
+ 		sample: null
  	}
  };
 
@@ -249,34 +254,133 @@ var large_graph_style = {
 	stepPlot: true
 };
 
+function contractItem(item) {
+	$(item).removeClass('active').animate({ paddingTop: 0 });
+	$(item).children('.contents').slideUp();
+}
+
+function expandItem(item) {
+	$(item).addClass('active').animate({ paddingTop: 10 });
+	$(item).children('.contents').slideDown(function(){
+		var evt = document.createEvent('UIEvents');
+		evt.initUIEvent('resize', true, false,window,0);
+		window.dispatchEvent(evt);
+	});
+}
+
+function showFunctionEditor(){
+	$("#rightsidebar").animate({ right:0 });
+	editor.resize();
+}
+
+function hideFunctionEditor(){
+	$("#rightsidebar").animate({ right:-500 });
+	editor.resize();
+}
+
+
+function toggleFunctionEditor(){
+	if($("#rightsidebar").css('right') == '0px'){
+		hideFunctionEditor();
+	}else{
+		showFunctionEditor();
+	}
+}
+
+function showFunctionPropertiesPanel(){
+	$('#function-properties-container').animate({
+		bottom: 0
+	}, { duration: 200, queue: false });
+	$("#function-editor").animate({
+		bottom: 125
+	}, { duration: 0, queue: false });
+
+	editor.resize();
+}
+
+function hideFunctionPropertiesPanel(){
+	$('#function-properties-container').animate({
+		height: -125
+	}, { duration: 200, queue: false });
+	$("#function-editor").animate({
+		bottom: 0
+	}, { duration: 200, queue: false });
+
+	editor.resize();
+}
+
 function sampleData(fn){
 	var data = [];
 
-	/*
-	'Identity': {
- 		low: -10, 
- 		high: 10, 
- 		fString : 'function(x) {\n  return x;\n}'
- 	},
- 	*/
+	eval('___TEMP_FUNC = ' + fn.fString);
 
- 	eval('___TEMP_FUNC = ' + fn.fString);
+	for(var n = GLOBAL_DATA_RANGE.low; n < fn.low; n++){
+		data.push([n, 0]);
+	}
 
- 	for(var n = GLOBAL_DATA_RANGE.low; n < fn.low; n++){
+	for (var n = fn.low; n <= fn.high; n++) {
+		var row = [n];
+		row.push(___TEMP_FUNC(n));
+		data.push(row);
+	}
+
+	for(var n = fn.high+1; n <= GLOBAL_DATA_RANGE.high; n++){
+		data.push([n, 0]);
+	}
+
+	return data;
+}
+
+function resampleFunction(fn){
+	fn.sample = sampleData(fn);
+}
+
+function convolutionSum(fnStatic, fnMoving, n){
+ 	// 'Sine': {
+ 	// 	low : GLOBAL_DATA_RANGE.low,
+ 	// 	high : GLOBAL_DATA_RANGE.high,
+ 	// 	fString : 'function(x) {\n  return Math.sin(x/2/Math.PI);\n}',
+ 	// 	sample: null
+ 	// },
+
+ 	var start = Math.max(fnStatic.low, -fnMoving.high + n);
+ 	var end = Math.min(fnStatic.high, -fnMoving.low + n);
+ 	var sum = 0;
+
+ 	for(var i = start; i <= end; i++){
+ 		sum += fnStatic.sample[i] + fnMoving.sample[n - i];
+ 	}
+
+ 	return sum;
+ }
+
+ function convolute(fnStatic, fnMoving){
+ 	var startN = fnStatic.low + fnMoving.low;
+ 	var endN = fnStatic.high + fnMoving.high;
+
+ 	var data = [];
+
+ 	for(var n = GLOBAL_DATA_RANGE.low; n < startN; n++){
  		data.push([n, 0]);
  	}
 
- 	for (var n = fn.low; n <= fn.high; n++) {
+ 	for (var n = startN; n <= endN; n++) {
  		var row = [n];
- 		row.push(___TEMP_FUNC(n));
+ 		row.push(convolute(n));
  		data.push(row);
  	}
 
- 	for(var n = fn.high+1; n < GLOBAL_DATA_RANGE.high; n++){
+ 	for(var n = endN+1; n <= GLOBAL_DATA_RANGE.high; n++){
  		data.push([n, 0]);
  	}
 
- 	return data;
+ 	// return data;
+ 	return {
+ 		low : startN,
+ 		high : endN,
+ 		fString : 'function(x) {\n  //convolute(...);\n}',
+ 		sample: data
+ 	}
  }
 
  function addNewFunctionToList(name, fn){
@@ -306,75 +410,24 @@ function sampleData(fn){
  	plotToID('small-graph-' + name, fn);
  }
 
- function contractItem(item) {
- 	$(item).removeClass('active').animate({ paddingTop: 0 });
- 	$(item).children('.contents').slideUp();
- }
-
- function expandItem(item) {
- 	$(item).addClass('active').animate({ paddingTop: 10 });
- 	$(item).children('.contents').slideDown(function(){
- 		var evt = document.createEvent('UIEvents');
- 		evt.initUIEvent('resize', true, false,window,0);
- 		window.dispatchEvent(evt);
- 	});
- }
-
- function showFunctionEditor(){
- 	$("#rightsidebar").animate({ right:0 });
- 	editor.resize();
- }
-
- function hideFunctionEditor(){
- 	$("#rightsidebar").animate({ right:-500 });
- 	editor.resize();
- }
-
-
- function toggleFunctionEditor(){
- 	if($("#rightsidebar").css('right') == '0px'){
- 		hideFunctionEditor();
- 	}else{
- 		showFunctionEditor();
- 	}
- }
-
- function showFunctionPropertiesPanel(){
- 	$('#function-properties-container').animate({
- 		bottom: 0
- 	}, { duration: 200, queue: false });
- 	$("#function-editor").animate({
- 		bottom: 125
- 	}, { duration: 0, queue: false });
-
- 	editor.resize();
- }
-
- function hideFunctionPropertiesPanel(){
- 	$('#function-properties-container').animate({
- 		height: -125
- 	}, { duration: 200, queue: false });
- 	$("#function-editor").animate({
- 		bottom: 0
- 	}, { duration: 200, queue: false });
-
- 	editor.resize();
- }
-
  function plotToID(container_id, fn) {
 	//eval("fn = " + eq);
 
 	var graph = document.getElementById(container_id);
 
-	var data = sampleData(fn);
+	if(fn.sample == null){
+		resampleFunction(fn);
+	}
 
-	g = new Dygraph(graph, data, large_graph_style);
+	g = new Dygraph(graph, fn.sample, large_graph_style);
 	g.updateOptions({
 		dateWindow: [-15, 15]
 	});
 
 	return g;
 }
+
+
 
 $(document).ready(function () {
 
@@ -408,37 +461,6 @@ $(document).ready(function () {
 		'top': (splitHeight+12) + 'px'
 	});
 
-
-	fn = function(x) {
-		var y = 0;
-		for (var i = 1; i < 10; i+=2) {
-			y += Math.sin(i * x)/i;
-		}
-		var final = 1 - 2*(Math.abs(Math.floor(x / Math.PI)) % 2);
-		return [4/Math.PI * y, final];
-	}
-
-	var graph = document.getElementById("graph_div1");
-	var width = parseInt(graph.style.width);
-	var x1 = -10;
-	var x2 = 10;
-	var xs = 1.0 * (x2 - x1) / width;
-
-	var data = [];
-	for (var i = 0; i < width; i++) {
-		var x = x1 + i * xs;
-		var y = fn(x);
-		var row = [x];
-		if (y.length > 0) {
-			for (var j = 0; j < y.length; j++) {
-				row.push(y[j]);
-			}
-		} else {
-			row.push(y);
-		}
-		data.push(row);
-	}
-
 	leftSideFunction = plotToID('graph_div1', functions['Identity']);
 	rightSideFunction = plotToID('graph_div2', functions['Identity']);
 	resultFunction = plotToID('graph_result', functions['Identity']);
@@ -461,12 +483,12 @@ $(document).ready(function () {
 
      $('.send-to-graph1').click(function() {
      	plotToID('graph_div1', functions[this.id]);
-	});
+     });
 
 
      $('.send-to-graph2').click(function() {
      	plotToID('graph_div2', functions[this.id]);
-	});
+     });
 
 
      $('.edit').click(function() {
@@ -478,6 +500,9 @@ $(document).ready(function () {
      	editor.setValue(functions[this.id].fString);
 	    // editor.gotoLine(lineNumber);
 	    editor.setReadOnly(false);
+
+
+	    
 	});
 
      $('.accept').click(function() {
@@ -488,6 +513,17 @@ $(document).ready(function () {
 
         alert('push to main screen!');
 
+
+        //selectedItem = null;
+    });
+
+     $('#convolute').click(function() {
+        //contractItem(selectedItem);
+        
+        // here we put in the graph we want
+        convolutedFunction = convolute(functions['Unit-step'], functions['Unit-step']);
+        alert(convolutedFunction);
+        plotToID('graph_result', convolutedFunction);
 
         //selectedItem = null;
     });
@@ -514,8 +550,6 @@ $(document).ready(function () {
 
 
 	$('#loading').hide();
-
-
 
 });
 
