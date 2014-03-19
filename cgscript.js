@@ -159,21 +159,21 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  var selectedItem;
 
  var GLOBAL_DATA_RANGE = {
- 	low: -100,
- 	high: 100
+ 	low: -500,
+ 	high: 500
  };
 
  var functions = {
  	'Identity': {
  		low: GLOBAL_DATA_RANGE.low, 
  		high: GLOBAL_DATA_RANGE.high, 
- 		fString : 'function(x) {\n  return x;\n}',
+ 		fString : 'function(x) {\n  return (x >= 0) ? x : 0;\n}',
  		sample: null
  	},
  	'Sine': {
  		low : GLOBAL_DATA_RANGE.low,
  		high : GLOBAL_DATA_RANGE.high,
- 		fString : 'function(x) {\n  return Math.sin(x/2/Math.PI);\n}',
+ 		fString : 'function(x) {\n  return (x >= 0) ? Math.sin(x/2/Math.PI) : 0;\n}',
  		sample: null
  	},
  	'Square-wave': {
@@ -185,7 +185,7 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  	'Unit-step': {
  		low: -1, 
  		high: GLOBAL_DATA_RANGE.high, 
- 		fString: 'function(x) {\n  return (x > 0) ? 1 : 0;\n}',
+ 		fString: 'function(x) {\n  return (x >= 0) ? 1 : 0;\n}',
  		sample: null
  	},
  	'Delta':{
@@ -200,7 +200,8 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  discreteSignalPlotter = function (e) {
  	var ctx = e.drawingContext;
  	var points = e.points;
-  var y_bottom = e.dygraph.toDomYCoord(0);  // see http://dygraphs.com/jsdoc/symbols/Dygraph.html#toDomYCoord
+	// see http://dygraphs.com/jsdoc/symbols/Dygraph.html#toDomYCoord
+	var y_bottom = e.dygraph.toDomYCoord(0);  
 
   // This should really be based on the minimum gap
   // var bar_width = 2/3 * (points[1].canvasx - points[0].canvasx);
@@ -343,34 +344,42 @@ function convolutionSum(fnStatic, fnMoving, n){
  	// 	sample: null
  	// },
 
+ 	eval('_STATIC_FUNC = ' + fnStatic.fString);
+ 	eval('_MOVING_FUNC = ' + fnMoving.fString);
+
+
  	var start = Math.max(fnStatic.low, -fnMoving.high + n);
  	var end = Math.min(fnStatic.high, -fnMoving.low + n);
  	var sum = 0;
 
  	for(var i = start; i <= end; i++){
- 		sum += fnStatic.sample[i] + fnMoving.sample[n - i];
+ 		sum += _STATIC_FUNC(i) * _MOVING_FUNC(n - i);
  	}
 
  	return sum;
  }
 
  function convolute(fnStatic, fnMoving){
+ 	console.log("CONVOLUTING!");
+ 	console.log(fnStatic);
+ 	console.log(fnMoving);
  	var startN = fnStatic.low + fnMoving.low;
  	var endN = fnStatic.high + fnMoving.high;
+ 	console.log('START: ' + startN + ', END: ' + endN);
 
  	var data = [];
 
- 	for(var n = GLOBAL_DATA_RANGE.low; n < startN; n++){
+ 	for(var n = GLOBAL_DATA_RANGE.low + 1; n < startN; n++){
  		data.push([n, 0]);
  	}
 
  	for (var n = startN; n <= endN; n++) {
  		var row = [n];
- 		row.push(convolute(n));
+ 		row.push(convolutionSum(fnStatic, fnMoving, n));
  		data.push(row);
  	}
 
- 	for(var n = endN+1; n <= GLOBAL_DATA_RANGE.high; n++){
+ 	for(var n = endN+1; n < GLOBAL_DATA_RANGE.high; n++){
  		data.push([n, 0]);
  	}
 
@@ -461,9 +470,9 @@ $(document).ready(function () {
 		'top': (splitHeight+12) + 'px'
 	});
 
-	leftSideFunction = plotToID('graph_div1', functions['Identity']);
-	rightSideFunction = plotToID('graph_div2', functions['Identity']);
-	resultFunction = plotToID('graph_result', functions['Identity']);
+	// leftSideFunction = plotToID('graph_div1', functions['Identity']);
+	// rightSideFunction = plotToID('graph_div2', functions['Identity']);
+	// resultFunction = plotToID('graph_result', functions['Identity']);
 
 	/**
 	 *	ADD preset functions to functons list
@@ -482,11 +491,13 @@ $(document).ready(function () {
 
 
      $('.send-to-graph1').click(function() {
+     	leftSideFunction = functions[this.id];
      	plotToID('graph_div1', functions[this.id]);
      });
 
 
      $('.send-to-graph2').click(function() {
+     	rightSideFunction = functions[this.id];
      	plotToID('graph_div2', functions[this.id]);
      });
 
@@ -517,15 +528,14 @@ $(document).ready(function () {
         //selectedItem = null;
     });
 
-     $('#convolute').click(function() {
-        //contractItem(selectedItem);
-        
-        // here we put in the graph we want
-        convolutedFunction = convolute(functions['Unit-step'], functions['Unit-step']);
-        alert(convolutedFunction);
+     $('#new-function').click(function() {
+        convolutedFunction = convolute(leftSideFunction, rightSideFunction);
         plotToID('graph_result', convolutedFunction);
+    });
 
-        //selectedItem = null;
+     $('#convolute').click(function() {
+        convolutedFunction = convolute(leftSideFunction, rightSideFunction);
+        plotToID('graph_result', convolutedFunction);
     });
 
      $('#toggle-editor').click(function() {
