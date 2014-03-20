@@ -188,10 +188,10 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  		fString: 'function(x) {\n  return (x >= 0) ? 1 : 0;\n}',
  		sample: null
  	},
- 	'Delta':{
- 		low: -1, 
- 		high: 1, 
- 		fString: 'function(x) {\n  return (x == 0) ? 1 : 0;\n}' ,
+ 	'd':{
+ 		low: 4, 
+ 		high: 6, 
+ 		fString: 'function(x) {\n  return (x == 5) ? 1 : 0;\n}' ,
  		sample: null
  	}
  };
