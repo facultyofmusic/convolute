@@ -188,10 +188,22 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  		fString: 'function(x) {\n  return (x >= 0) ? 1 : 0;\n}',
  		sample: null
  	},
- 	'd':{
- 		low: 4, 
- 		high: 6, 
+ 	'Delta':{
+ 		low: -1, 
+ 		high: 1, 
  		fString: 'function(x) {\n  return (x == 5) ? 1 : 0;\n}' ,
+ 		sample: null
+ 	},
+ 	'Exp':{
+ 		low: -1, 
+ 		high: GLOBAL_DATA_RANGE.high, 
+ 		fString: 'function(x) {\n  return (x >= 0) ? Math.exp(-x/10) : 0;\n}' ,
+ 		sample: null
+ 	},
+ 	'Differentiate':{
+ 		low: -2, 
+ 		high: 2, 
+ 		fString: 'function(x) {\n  if(x==-1) return 1; if(x==1) return -1; return 0;\n}' ,
  		sample: null
  	}
  };
@@ -227,6 +239,7 @@ var large_graph_style = {
 	colors: ['#70DB98', '#FF00FF'],
  	//strokeWidth: 1.5,
 	//displayAnnotations: false,
+	labels: ['', ''],
 	gridLineColor: 'rgb(90, 90, 90)',
 	drawYGrid: true,
 	drawYAxis: true,
@@ -503,13 +516,15 @@ $(document).ready(function () {
 
 
      $('.edit').click(function() {
+     	console.log("Editing existing function " + this.id);
+
      	showFunctionPropertiesPanel();
      	showFunctionEditor();
 
      	var editor = ace.edit("function-editor");
      	editor.resize();
      	editor.setValue(functions[this.id].fString);
-	    // editor.gotoLine(lineNumber);
+	    editor.gotoLine(0);
 	    editor.setReadOnly(false);
 
 
@@ -545,6 +560,17 @@ $(document).ready(function () {
 	// Change the filter when a leftsidebar item is clicked
 	$('#leftsidebar .item .title').click(function(e) {
 		var item = e.target.parentNode;
+
+		console.log("Opening function: " + e.target.innerHTML);
+
+
+     	var editor = ace.edit("function-editor");
+     	editor.setValue(functions[e.target.innerHTML].fString);
+	    editor.setReadOnly(true);
+	    editor.gotoLine(0);
+
+
+
 		if (selectedItem) contractItem(selectedItem);
 		if (selectedItem != item) {
 			expandItem(item);
