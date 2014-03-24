@@ -540,6 +540,7 @@ $(document).ready(function () {
 				console.log(functions[fname]);
 				console.log(editor.getValue());
         functions[fname].fString = editor.getValue();
+        resampleFunction(functions[fname]);
         toggleFunctionEditor();
     });
 
