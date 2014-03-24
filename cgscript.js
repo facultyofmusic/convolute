@@ -157,6 +157,8 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  var resultFunction;
 
  var selectedItem;
+ var fname;
+ var editor;
 
  var GLOBAL_DATA_RANGE = {
  	low: -500,
@@ -191,7 +193,7 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  	'Delta':{
  		low: -1, 
  		high: 1, 
- 		fString: 'function(x) {\n  return (x == 5) ? 1 : 0;\n}' ,
+ 		fString: 'function(x) {\n  return (x == 0) ? 1 : 0;\n}' ,
  		sample: null
  	},
  	'Exp':{
@@ -359,7 +361,6 @@ function convolutionSum(fnStatic, fnMoving, n){
 
  	eval('_STATIC_FUNC = ' + fnStatic.fString);
  	eval('_MOVING_FUNC = ' + fnMoving.fString);
-
 
  	var start = Math.max(fnStatic.low, -fnMoving.high + n);
  	var end = Math.min(fnStatic.high, -fnMoving.low + n);
@@ -535,17 +536,21 @@ $(document).ready(function () {
         //contractItem(selectedItem);
         
         // here we put in the graph we want
-        console.log("Putting in graph of " + this.id);
-
-        alert('push to main screen!');
-
-
-        //selectedItem = null;
+        console.log("Putting in graph of " + fname);
+				console.log(functions[fname]);
+				console.log(editor.getValue());
+        functions[fname].fString = editor.getValue();
+        toggleFunctionEditor();
     });
 
      $('#new-function').click(function() {
-        convolutedFunction = convolute(leftSideFunction, rightSideFunction);
-        plotToID('graph_result', convolutedFunction);
+        functions["NEW"] = {
+ 					low: GLOBAL_DATA_RANGE.low, 
+ 					high: GLOBAL_DATA_RANGE.high, 
+ 					fString : 'function(x) {\n  return (x >= 0) ? x : 0;\n}',
+ 					sample: null
+ 				}
+ 				addNewFunctionToList("New Function", functions["NEW"]);
     });
 
      $('#convolute').click(function() {
@@ -564,12 +569,12 @@ $(document).ready(function () {
 		console.log("Opening function: " + e.target.innerHTML);
 
 
-     	var editor = ace.edit("function-editor");
+     	editor = ace.edit("function-editor");
      	editor.setValue(functions[e.target.innerHTML].fString);
 	    editor.setReadOnly(true);
 	    editor.gotoLine(0);
 
-
+	  fname = e.target.innerHTML;
 
 		if (selectedItem) contractItem(selectedItem);
 		if (selectedItem != item) {
