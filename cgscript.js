@@ -537,10 +537,11 @@ $(document).ready(function () {
         
         // here we put in the graph we want
         console.log("Putting in graph of " + fname);
-				console.log(functions[fname]);
-				console.log(editor.getValue());
+
         functions[fname].fString = editor.getValue();
         resampleFunction(functions[fname]);
+        plotToID('small-graph-' + fname, functions[fname]);
+
         toggleFunctionEditor();
     });
 
