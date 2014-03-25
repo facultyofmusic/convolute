@@ -157,6 +157,8 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  var resultFunction;
 
  var selectedItem;
+ var lname;	// Left and right graphs; to see if they need updating
+ var rname;
  var fname;
  var editor;
 
@@ -505,12 +507,14 @@ $(document).ready(function () {
 
 
      $('.send-to-graph1').click(function() {
+     	lname = this.id;
      	leftSideFunction = functions[this.id];
      	plotToID('graph_div1', functions[this.id]);
      });
 
 
      $('.send-to-graph2').click(function() {
+     	rname = this.id;
      	rightSideFunction = functions[this.id];
      	plotToID('graph_div2', functions[this.id]);
      });
@@ -541,6 +545,11 @@ $(document).ready(function () {
         functions[fname].fString = editor.getValue();
         resampleFunction(functions[fname]);
         plotToID('small-graph-' + fname, functions[fname]);
+
+     		if (lname && lname == fname)
+     			plotToID('graph_div1', functions[fname]);
+     		if (rname && rname == fname)
+     			plotToID('graph_div2', functions[fname]);
 
         toggleFunctionEditor();
     });
