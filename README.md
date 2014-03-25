@@ -10,6 +10,8 @@ on them.  Through this process I hope whose of you who are confused will derive
 a more intuitive understanding of what it is, how it's values are derived,
 and hopefully just how interesting it can be. :P
 
+--------------------------
+
 ##### Currently the program supports:
 - convoluting predefined functions.
 - edit existing functions and save changes.
