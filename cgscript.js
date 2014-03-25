@@ -157,6 +157,10 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  var resultFunction;
 
  var selectedItem;
+ var lname;	// Left and right graphs; to see if they need updating
+ var rname;
+ var fname;
+ var editor;
 
  var GLOBAL_DATA_RANGE = {
  	low: -500,
@@ -191,7 +195,7 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  	'Delta':{
  		low: -1, 
  		high: 1, 
- 		fString: 'function(x) {\n  return (x == 5) ? 1 : 0;\n}' ,
+ 		fString: 'function(x) {\n  return (x == 0) ? 1 : 0;\n}' ,
  		sample: null
  	},
  	'Exp':{
@@ -360,7 +364,6 @@ function convolutionSum(fnStatic, fnMoving, n){
  	eval('_STATIC_FUNC = ' + fnStatic.fString);
  	eval('_MOVING_FUNC = ' + fnMoving.fString);
 
-
  	var start = Math.max(fnStatic.low, -fnMoving.high + n);
  	var end = Math.min(fnStatic.high, -fnMoving.low + n);
  	var sum = 0;
@@ -504,12 +507,14 @@ $(document).ready(function () {
 
 
      $('.send-to-graph1').click(function() {
+     	lname = this.id;
      	leftSideFunction = functions[this.id];
      	plotToID('graph_div1', functions[this.id]);
      });
 
 
      $('.send-to-graph2').click(function() {
+     	rname = this.id;
      	rightSideFunction = functions[this.id];
      	plotToID('graph_div2', functions[this.id]);
      });
@@ -535,17 +540,28 @@ $(document).ready(function () {
         //contractItem(selectedItem);
         
         // here we put in the graph we want
-        console.log("Putting in graph of " + this.id);
+        console.log("Putting in graph of " + fname);
 
-        alert('push to main screen!');
+        functions[fname].fString = editor.getValue();
+        resampleFunction(functions[fname]);
+        plotToID('small-graph-' + fname, functions[fname]);
 
+     		if (lname && lname == fname)
+     			plotToID('graph_div1', functions[fname]);
+     		if (rname && rname == fname)
+     			plotToID('graph_div2', functions[fname]);
 
-        //selectedItem = null;
+        toggleFunctionEditor();
     });
 
      $('#new-function').click(function() {
-        convolutedFunction = convolute(leftSideFunction, rightSideFunction);
-        plotToID('graph_result', convolutedFunction);
+        functions["NEW"] = {
+ 					low: GLOBAL_DATA_RANGE.low, 
+ 					high: GLOBAL_DATA_RANGE.high, 
+ 					fString : 'function(x) {\n  return (x >= 0) ? x : 0;\n}',
+ 					sample: null
+ 				}
+ 				addNewFunctionToList("New Function", functions["NEW"]);
     });
 
      $('#convolute').click(function() {
@@ -564,12 +580,12 @@ $(document).ready(function () {
 		console.log("Opening function: " + e.target.innerHTML);
 
 
-     	var editor = ace.edit("function-editor");
+     	editor = ace.edit("function-editor");
      	editor.setValue(functions[e.target.innerHTML].fString);
 	    editor.setReadOnly(true);
 	    editor.gotoLine(0);
 
-
+	  fname = e.target.innerHTML;
 
 		if (selectedItem) contractItem(selectedItem);
 		if (selectedItem != item) {
