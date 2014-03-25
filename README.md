@@ -10,14 +10,14 @@ on them.  Through this process I hope whose of you who are confused will derive
 a more intuitive understanding of what it is, how it's values are derived,
 and hopefully just how interesting it can be. :P
 
-#### Currently the program supports:
+##### Currently the program supports:
 - convoluting predefined functions.
 - edit existing functions and save changes.
 - easily usable graph space (zoom in, zoom out, move around, etc)
 - You can currently only make one new function due to incomplete implementation of function naming parameters. 
 
 
-#### Next steps on my todo list for this app:
+##### Next steps on my todo list for this app:
 - animate convolution process.
 - convolution algorithm optimization: The current function used to convolute two functions is slow because it was meant to be a quick hand-waving solution with computational complexity of O(n^2).  It can easily be changed to a O(n) algorithm by taking into account the finite differences between each step of increase in N.  
 
@@ -26,7 +26,7 @@ and hopefully just how interesting it can be. :P
 - error checking. (right now the editor assumes the user will not try to mess it up)
 
 
-#### Others?:
+##### Others?:
 - multiple browser support.
 - other things I can’t get off the top of my head.
 
