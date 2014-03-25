@@ -21,10 +21,10 @@ and hopefully just how interesting it can be. :P
 - animate convolution process.
 - convolution algorithm optimization:
 
-	The current function used to convolute two functions is slow because it was
-	meant to be a quick hand-waving solution with computational complexity of 
-	O(n^2).  It can easily be changed to a O(n) algorithm by taking into account
-	the finite differences between each step of increase in N.  
+...The current function used to convolute two functions is slow because it was
+...meant to be a quick hand-waving solution with computational complexity of 
+...O(n^2).  It can easily be changed to a O(n) algorithm by taking into account
+...the finite differences between each step of increase in N.  
 
 - make multiple (more than one) custom functions work.
 - add a button to save the result of a convolution as a new function.
@@ -38,7 +38,7 @@ and hopefully just how interesting it can be. :P
 
 --------------------------
 
-#### Credits and Thanks:
+### Credits and Thanks:
 
 This web-app's HTML framework is based on Evan Wallace's Web-GL Filters app.
 I did not think one would be capable of achieving such elegance in  web-apps
