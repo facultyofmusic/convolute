@@ -19,9 +19,7 @@ and hopefully just how interesting it can be. :P
 
 #### Next steps on my todo list for this app:
 - animate convolution process.
-- convolution algorithm optimization:
-
-The current function used to convolute two functions is slow because it was..
+- convolution algorithm optimization: The current function used to convolute two functions is slow because it was..
 ...meant to be a quick hand-waving solution with computational complexity of..
 ...O(n^2).  It can easily be changed to a O(n) algorithm by taking into account..
 ...the finite differences between each step of increase in N.  
