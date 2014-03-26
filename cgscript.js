@@ -564,7 +564,7 @@ $(document).ready(function () {
      	}
 
       // Insert into list, but check for duplicates first
-     	var inserted = false;
+      var inserted = false;
       var counter = 0;
       while (!inserted) {
         var funcname = "New-Function-" + counter;
