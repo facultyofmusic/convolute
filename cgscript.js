@@ -555,13 +555,29 @@ $(document).ready(function () {
     });
 
      $('#new-function').live('click', function (e) {
-     	functions["NEW"] = {
+     	// Create new function with default properties, but don't add it to the list
+      var newFunction = {
      		low: GLOBAL_DATA_RANGE.low, 
      		high: GLOBAL_DATA_RANGE.high, 
      		fString : 'function(x) {\n  return (x >= 0) ? x : 0;\n}',
      		sample: null
      	}
-     	addNewFunctionToList("NEW", functions["NEW"]);
+
+      // Insert into list, but check for duplicates first
+     	var inserted = false;
+      var counter = 0;
+      while (!inserted) {
+        var funcname = "New-Function-" + counter;
+        console.log('Attempting to insert ' + funcname);
+       
+        if (functions[funcname] == null) {
+          // Function does not exist yet, let's add it to the array, then the list.
+          functions[funcname] = newFunction;
+          addNewFunctionToList(funcname, functions[funcname]);
+          inserted = true;
+        }
+        counter++;
+      }
 
      	console.log(functions);
      });
