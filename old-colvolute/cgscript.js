@@ -188,10 +188,28 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  		fString: 'function(x) {\n  return (x >= 0) ? 1 : 0;\n}',
  		sample: null
  	},
+ 	'Differentiate':{
+ 		low: -5, 
+ 		high: 5, 
+ 		fString: 'function(x) {\n  if(x == -1) return 1; if(x == 1) return -1; return 0;\n}' ,
+ 		sample: null
+ 	},
  	'Delta':{
  		low: -1, 
  		high: 1, 
  		fString: 'function(x) {\n  return (x == 0) ? 1 : 0;\n}' ,
+ 		sample: null
+ 	},
+ 	'e':{
+ 		low: -1, 
+ 		high: GLOBAL_DATA_RANGE.high, 
+ 		fString: 'function(x) {\n  return (x >= 0) ? Math.exp(-x/5.0) : 0;\n}' ,
+ 		sample: null
+ 	},
+ 	'N-Square':{
+ 		low: -1, 
+ 		high: GLOBAL_DATA_RANGE.high, 
+ 		fString: 'function(x) {\n  return (x >= 0) ? x*x : 0;\n}' ,
  		sample: null
  	}
  };
