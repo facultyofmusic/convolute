@@ -42,12 +42,13 @@ body {
 .button {
     display: inline-block;
     padding: 1px 15px;
-    border-radius: 0px;
+    border-radius: 2px;
     vertical-align: top;
     background: -moz-linear-gradient(#4B4947, #32302D);
     background: -webkit-gradient(linear, left top, left bottom, from(#4B4947), to(#32302D));
     -moz-box-shadow: inset 0 1px 0 #5B5957, 0 -1px 0 black, 0 1px 0 black, -1px 0 0 black, 1px 0 0 black, 0 1px 1px #111;
     -webkit-box-shadow: inset 0 1px 0 #5B5957, 0 -1px 0 black, 0 1px 0 black, -1px 0 0 black, 1px 0 0 black, 0 1px 1px #111;
+    /*border: solid black 1px;*/
 }
 
 .button:active {

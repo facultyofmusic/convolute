@@ -157,6 +157,10 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  var resultFunction;
 
  var selectedItem;
+ var lname;	// Left and right graphs; to see if they need updating
+ var rname;
+ var fname;
+ var editor;
 
  var GLOBAL_DATA_RANGE = {
  	low: -500,
@@ -200,6 +204,7 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  		fString: 'function(x) {\n  return (x == 0) ? 1 : 0;\n}' ,
  		sample: null
  	},
+<<<<<<< HEAD:old-colvolute/cgscript.js
  	'e':{
  		low: -1, 
  		high: GLOBAL_DATA_RANGE.high, 
@@ -210,6 +215,18 @@ function zoom(g, zoomInPercentage, xBias, yBias) {
  		low: -1, 
  		high: GLOBAL_DATA_RANGE.high, 
  		fString: 'function(x) {\n  return (x >= 0) ? x*x : 0;\n}' ,
+=======
+ 	'Exp':{
+ 		low: -1, 
+ 		high: GLOBAL_DATA_RANGE.high, 
+ 		fString: 'function(x) {\n  return (x >= 0) ? Math.exp(-x/10) : 0;\n}' ,
+ 		sample: null
+ 	},
+ 	'Differentiate':{
+ 		low: -2, 
+ 		high: 2, 
+ 		fString: 'function(x) {\n  if(x==-1) return 1; if(x==1) return -1; return 0;\n}' ,
+>>>>>>> FETCH_HEAD:cgscript.js
  		sample: null
  	}
  };
@@ -245,6 +262,7 @@ var large_graph_style = {
 	colors: ['#70DB98', '#FF00FF'],
  	//strokeWidth: 1.5,
 	//displayAnnotations: false,
+	labels: ['', ''],
 	gridLineColor: 'rgb(90, 90, 90)',
 	drawYGrid: true,
 	drawYAxis: true,
@@ -364,7 +382,6 @@ function convolutionSum(fnStatic, fnMoving, n){
 
  	eval('_STATIC_FUNC = ' + fnStatic.fString);
  	eval('_MOVING_FUNC = ' + fnMoving.fString);
-
 
  	var start = Math.max(fnStatic.low, -fnMoving.high + n);
  	var end = Math.min(fnStatic.high, -fnMoving.low + n);
@@ -508,61 +525,104 @@ $(document).ready(function () {
 
 
 
-     $('.send-to-graph1').click(function() {
+     $('.send-to-graph1').live('click', function (e) {
+     	lname = this.id;
      	leftSideFunction = functions[this.id];
      	plotToID('graph_div1', functions[this.id]);
      });
 
 
-     $('.send-to-graph2').click(function() {
+     $('.send-to-graph2').live('click', function (e) {
+     	rname = this.id;
      	rightSideFunction = functions[this.id];
      	plotToID('graph_div2', functions[this.id]);
      });
 
 
-     $('.edit').click(function() {
+     $('.edit').live('click', function (e) {
+     	console.log("Editing existing function " + this.id);
+
      	showFunctionPropertiesPanel();
      	showFunctionEditor();
 
      	var editor = ace.edit("function-editor");
      	editor.resize();
      	editor.setValue(functions[this.id].fString);
-	    // editor.gotoLine(lineNumber);
-	    editor.setReadOnly(false);
+     	editor.gotoLine(0);
+     	editor.setReadOnly(false);
 
 
-	    
-	});
 
-     $('.accept').click(function() {
+     });
+
+     $('.accept').live('click', function (e) {
         //contractItem(selectedItem);
         
         // here we put in the graph we want
-        console.log("Putting in graph of " + this.id);
+        console.log("Putting in graph of " + fname);
 
-        alert('push to main screen!');
+        functions[fname].fString = editor.getValue();
+        resampleFunction(functions[fname]);
+        plotToID('small-graph-' + fname, functions[fname]);
 
+        if (lname && lname == fname)
+        	plotToID('graph_div1', functions[fname]);
+        if (rname && rname == fname)
+        	plotToID('graph_div2', functions[fname]);
 
-        //selectedItem = null;
+        toggleFunctionEditor();
     });
 
-     $('#new-function').click(function() {
-        convolutedFunction = convolute(leftSideFunction, rightSideFunction);
-        plotToID('graph_result', convolutedFunction);
-    });
+     $('#new-function').live('click', function (e) {
+     	// Create new function with default properties, but don't add it to the list
+      var newFunction = {
+     		low: GLOBAL_DATA_RANGE.low, 
+     		high: GLOBAL_DATA_RANGE.high, 
+     		fString : 'function(x) {\n  return (x >= 0) ? x : 0;\n}',
+     		sample: null
+     	}
 
-     $('#convolute').click(function() {
-        convolutedFunction = convolute(leftSideFunction, rightSideFunction);
-        plotToID('graph_result', convolutedFunction);
-    });
+      // Insert into list, but check for duplicates first
+      var inserted = false;
+      var counter = 0;
+      while (!inserted) {
+        var funcname = "New-Function-" + counter;
+        console.log('Attempting to insert ' + funcname);
+       
+        if (functions[funcname] == null) {
+          // Function does not exist yet, let's add it to the array, then the list.
+          functions[funcname] = newFunction;
+          addNewFunctionToList(funcname, functions[funcname]);
+          inserted = true;
+        }
+        counter++;
+      }
 
-     $('#toggle-editor').click(function() {
+     	console.log(functions);
+     });
+
+     $('#convolute').live('click', function (e) {
+     	convolutedFunction = convolute(leftSideFunction, rightSideFunction);
+     	plotToID('graph_result', convolutedFunction);
+     });
+
+     $('#toggle-editor').live('click', function (e) {
      	toggleFunctionEditor();
      });
 
-	// Change the filter when a leftsidebar item is clicked
-	$('#leftsidebar .item .title').click(function(e) {
+	$('#leftsidebar .item .title').live('click', function(e) {
 		var item = e.target.parentNode;
+
+		console.log("Opening function: " + e.target.innerHTML);
+
+
+		editor = ace.edit("function-editor");
+		editor.setValue(functions[e.target.innerHTML].fString);
+		editor.setReadOnly(true);
+		editor.gotoLine(0);
+
+		fname = e.target.innerHTML;
+
 		if (selectedItem) contractItem(selectedItem);
 		if (selectedItem != item) {
 			expandItem(item);
